@@ -1,0 +1,9 @@
+{
+  "short_name": "projX",
+  "name": "diagnostic system of skin cancer",
+  "icons": [],
+  "start_url": ".",
+  "display": "standalone",
+  "theme_color": "#000000",
+  "background_color": "#ffffff"
+}

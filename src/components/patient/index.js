@@ -23,6 +23,7 @@ import Input from '../Input'
 import { formatTelNumber, formatDate } from '../../helpers/utils'
 import { CustomDateTimePicker } from '../dialogs/NewPatientDialog'
 import PatientTest from './patient-test'
+import { couldStartTrivia } from 'typescript'
 
 // import svgs
 const Female = '/svg/female-avatar.svg'
@@ -233,6 +234,16 @@ const EditIcon = styled(Icon)`
       hover:text-[#102c6f]
   `}
 `
+const ResultContainer = styled.div`
+  ${tw`
+    my-4
+    grid
+    md:grid-cols-2
+    grid-cols-1
+    gap-x-6
+    gap-y-6
+`}
+`
 
 function TabPanel(props) {
   const { children, value, index, ...other } = props
@@ -306,7 +317,6 @@ const PatientRecord = () => {
 
   const patient = queryClient.getQueryData(['patients', patient_id])
   const namesArr = data?.name.split(' ') || patient?.name.split(' ')
-
   const handleUpdateCancel = () => {
     setFirstnameEdit(false)
     setLastnameEdit(false)
@@ -502,7 +512,7 @@ const PatientRecord = () => {
                 {isLastnameEdit ? (
                   <Input
                     type='text'
-                    value={namesArr[1]}
+                    value={lastname}
                     setValue={setLastname}
                     label={namesArr[1]}
                   />
@@ -522,7 +532,7 @@ const PatientRecord = () => {
                 {isFirstnmEdit ? (
                   <Input
                     type='text'
-                    value={namesArr[0]}
+                    value={firstname}
                     label={namesArr[0]}
                     setValue={setFirstname}
                   />
@@ -679,6 +689,68 @@ const PatientRecord = () => {
           <Articles>
             <SubTitle>TEST</SubTitle>
             <PatientTest />
+          </Articles>
+          <Articles>
+            <SubTitle>DOCTOR'S RESULTS</SubTitle>
+            <ResultContainer>
+              <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
+                <LabelContainer>
+                  <Label>test result</Label>
+                  <EditIcon
+                    icon='ant-design:edit-outlined'
+                    onClick={() => setLastnameEdit(true)}
+                  />
+                </LabelContainer>
+                {isLastnameEdit ? (
+                  <Input
+                    type='text'
+                    value={lastname}
+                    setValue={setLastname}
+                    label={namesArr[1]}
+                  />
+                ) : (
+                  <Text>postive</Text>
+                )}
+              </FormControl>
+              <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
+                <LabelContainer>
+                  <Label>doctor diagnosis</Label>
+                  <EditIcon
+                    icon='ant-design:edit-outlined'
+                    onClick={() => setLastnameEdit(true)}
+                  />
+                </LabelContainer>
+                {isLastnameEdit ? (
+                  <Input
+                    type='text'
+                    value={lastname}
+                    setValue={setLastname}
+                    label={namesArr[1]}
+                  />
+                ) : (
+                  <Text>melanoma was found</Text>
+                )}
+              </FormControl>
+              <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
+                <LabelContainer>
+                  <Label>doctor recommendation</Label>
+                  <EditIcon
+                    icon='ant-design:edit-outlined'
+                    onClick={() => setLastnameEdit(true)}
+                  />
+                </LabelContainer>
+                {isLastnameEdit ? (
+                  <Input
+                    type='text'
+                    value={lastname}
+                    setValue={setLastname}
+                    label={namesArr[1]}
+                  />
+                ) : (
+                  <Text>chemotherapy</Text>
+                )}
+              </FormControl>
+            </ResultContainer>
           </Articles>
         </TabPanel>
         <TabPanel

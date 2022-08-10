@@ -122,9 +122,7 @@ const NavBar = () => {
       <RightContainer className='w-fit'>
         <CustomIcon icon={`carbon:notification-filled`} />
         <Name>
-          {role}
-          {''}
-          {name}
+          {role} {name}
         </Name>
         <Button onClick={handleLogout} color='#f6854e' hoverColor='#f0783d'>
           {isLoading ? 'logging out...' : ' logout'}

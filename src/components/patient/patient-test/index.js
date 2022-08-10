@@ -4,6 +4,7 @@ import tw from 'twin.macro'
 import { Icon } from '@iconify/react'
 import { Text } from '..'
 import ImageCard from './TestImageCard'
+import AddImageDialog from '../../dialogs/AddImageDialog'
 
 const Container = styled.div`
   ${tw`
@@ -95,6 +96,7 @@ const IconButton = styled.div`
   `}
 `
 const PatientTest = () => {
+  const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   return (
     <Container>
       <TestTitle>Title</TestTitle>
@@ -105,7 +107,7 @@ const PatientTest = () => {
         consequatur, autem sint. Cumque.
       </TestDescription>
       <TestImagesContainer>
-        <AddPhotoButton className='group'>
+        <AddPhotoButton className='group' onClick={() => setIsDialogOpen(true)}>
           <ImageIcon icon='bx:image-add' />
           <div className='flex py-4 px-4  gap-2'>
             <IconButton color='warning' aria-label='add test image sample'>
@@ -120,6 +122,8 @@ const PatientTest = () => {
             </TextContainer>
           </div>
         </AddPhotoButton>
+        {/*  image input form dialog */}
+        <AddImageDialog isOpen={isDialogOpen} setIsOpen={setIsDialogOpen} />
         <ImageCard />
       </TestImagesContainer>
     </Container>

@@ -127,7 +127,7 @@ const TestImageCard = (props) => {
       <CardMedia
         component='img'
         height='90'
-        image='http://localhost:5000/get-image/test_sample_1656957907_e2935a4e-eb04-4bd9-b297-8d43ad0ef23a.jpg'
+        image='http://localhost:5000/get-image/test_sample_1660058607_a2dec70d-b884-4a5b-b434-03a558e15538.jpg'
         alt='image'
       />
       <CardContent>
@@ -175,10 +175,10 @@ const TestImageCard = (props) => {
                     className={`${
                       item.conf >= 75
                         ? 'bg-[#24f0ce]'
-                          ? item.conf >= 50 && item.conf <= 74
-                          : 'bg-[#49b267]'
-                          ? item.conf <= 49 && item.conf >= 35
-                          : 'bg-orange-500'
+                        : item.conf >= 50 && item.conf <= 74
+                        ? 'bg-[#49b267]'
+                        : item.conf <= 49 && item.conf >= 35
+                        ? 'bg-orange-500'
                         : 'bg-red-600'
                     } text-xs font-medium text-blue-100 text-center p-1 leading-none rounded-full `}
                     style={{ width: `${item.conf}%` }}

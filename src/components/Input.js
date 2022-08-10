@@ -27,6 +27,20 @@ const CustomInput = styled.input`
     bg-[#f9fafb]
   `}
 `
+const CustomFile = styled.input`
+  ${tw`
+    relative
+    w-full
+    px-2
+    py-2
+    rounded-md
+    text-gray-800
+    text-sm
+    lg:text-base
+    font-medium
+    bg-[#f9fafb]
+`}
+`
 const CustomSelect = styled.select`
   ${tw`
     relative
@@ -122,6 +136,15 @@ const InputCard = ({
           onChange={({ target }) => setValue(target.value)}
           required={isRequired}
         />
+      ) : type === 'file' ? (
+        <CustomFile
+          type={type}
+          // defaultValue={value}
+          // placeholder={label}
+          className='outline-1 outline-dashed outline-[#f6854e]   file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#f6854e3f] file:text-[#f6854e] hover:file:bg-[#f6854e4f]'
+          // onChange={({ target }) => setValue(target.value)}
+          required={isRequired}
+        />
       ) : (
         <CustomInput
           type={type}
@@ -129,7 +152,7 @@ const InputCard = ({
           placeholder={label}
           min={min}
           max={max}
-          className='outline-1 outline-[#f6854e]'
+          className='outline-2  outline-offset-3 outline-[#f6854e]'
           onChange={({ target }) => setValue(target.value)}
           required={isRequired}
         />

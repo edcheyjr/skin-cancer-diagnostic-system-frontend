@@ -5,6 +5,7 @@ import tw from 'twin.macro'
 import { Icon } from '@iconify/react'
 import Button from '../components/PrimaryButtons'
 import NewPatientDialog from './dialogs/NewPatientDialog'
+import AddTestDialog from './dialogs/AddTestDialog'
 
 const Container = styled.div`
   ${tw`
@@ -62,7 +63,7 @@ const SearchBar = styled.div`
 `
 const TitleSection = ({ text, searchValue, setSearchValue }) => {
   const [isVisible, setIconVisible] = useState(true)
-  const [isOpen, setNewPatientDialog] = useState(false)
+  const [isOpen, setNewDialog] = useState(false)
   return (
     <Container>
       <SearchBar
@@ -83,14 +84,19 @@ const TitleSection = ({ text, searchValue, setSearchValue }) => {
           variant='outlined'
           color='#102c6fdf'
           hoverColor={'#102c6f'}
-          onClick={() => setNewPatientDialog(true)}
+          onClick={() => setNewDialog(true)}
         >
           <div className='flex items-center gap-1 text-[#102c6fdf] group-hover:text-gray-50 h-full w-full'>
             <span className='mx-auto my-auto'>add {text}</span>
             <CustomIcon icon={'carbon:add-alt'} />
           </div>
         </Button>
-        <NewPatientDialog isOpen={isOpen} setIsOpen={setNewPatientDialog} />
+
+        {text.toLowerCase() == 'test' ? (
+          <AddTestDialog isOpen={isOpen} setIsOpen={setNewDialog} />
+        ) : (
+          <NewPatientDialog isOpen={isOpen} setIsOpen={setNewDialog} />
+        )}
       </div>
     </Container>
   )

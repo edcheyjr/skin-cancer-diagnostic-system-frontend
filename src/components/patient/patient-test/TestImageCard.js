@@ -41,19 +41,19 @@ const SampleClassfication = [
 ]
 
 const Localization = style.div`${tw`
-   rounded-md
-   bg-gray-50
-   font-semibold
-   text-center
-   align-middle
-   text-[#102C6F]
-   lowercase
-   absolute
-   top-4
-   right-4
-   px-1.5
-   py-0.5
-   shadow-lg
+    rounded-md
+    bg-gray-50
+    font-semibold
+    text-center
+    align-middle
+    text-[#102C6F]
+    lowercase
+    absolute
+    top-4
+    right-4
+    px-1.5
+    py-0.5
+    shadow-lg
 `}`
 const LabelText = style.div`
   ${tw`

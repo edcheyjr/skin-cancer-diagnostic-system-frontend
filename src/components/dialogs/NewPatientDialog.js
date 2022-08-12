@@ -146,7 +146,6 @@ const NewPatientDialog = ({ isOpen, setIsOpen }) => {
       city,
       region,
     }
-    console.log('patient', PatientRecords)
     mutate(PatientRecords, {
       onSuccess: async (response, variable, context) => {
         const data = await response.json()

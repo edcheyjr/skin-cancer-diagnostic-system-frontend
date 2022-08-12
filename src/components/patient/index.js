@@ -7,6 +7,10 @@ import { useQueryClient } from 'react-query'
 import { Icon } from '@iconify/react'
 import { useParams } from 'react-router-dom'
 import { getAPatient, updatePatient } from '../../services/patient-api-service'
+import {
+  getAPatientRecord,
+  getAllPatientsRecord,
+} from '../../services/tests-api-service'
 import AllergySection from './allergys'
 import { AppBar, Tabs, Tab, Typography, Box } from '@mui/material'
 import { useTheme } from '@mui/material/styles'
@@ -23,7 +27,6 @@ import Input from '../Input'
 import { formatTelNumber, formatDate } from '../../helpers/utils'
 import { CustomDateTimePicker } from '../dialogs/NewPatientDialog'
 import PatientTest from './patient-test'
-import { couldStartTrivia } from 'typescript'
 
 // import svgs
 const Female = '/svg/female-avatar.svg'
@@ -217,8 +220,8 @@ const Label = styled.div`
 `
 export const Text = styled.div`
   ${tw`
-       text-sm
-       lg:text-base
+      text-sm
+      lg:text-base
       font-semibold
       capitalize
       text-black
@@ -288,6 +291,13 @@ const PatientRecord = () => {
   const [errorMessage, setError] = useState('')
   const [success, setSuccess] = useState('')
 
+  // update states for patient record
+  const [testresult, setTestResult] = useState('')
+  const [docdiagnosis, setDocDiagonsis] = useState('')
+  const [docrec, setDocRec] = useState('')
+  const [recordsErrMessage, setRecordsErrMessage] = useState('')
+  const [updatesuccess, setUpdateSuccess] = useState('')
+
   // edit checks
   const [isFirstnmEdit, setFirstnameEdit] = useState(false)
   const [isLastnameEdit, setLastnameEdit] = useState(false)
@@ -297,10 +307,14 @@ const PatientRecord = () => {
   const [isDOBEdit, setDOBEdit] = useState(false)
   const [isCityEdit, setCityEdit] = useState(false)
   const [isRegionEdit, setRegionEdit] = useState(false)
+  const [isTestResultEdit, setTestResultEdit] = useState('')
+  const [isDocDiagnosisEdit, setDocDiagnosisEdit] = useState('')
+  const [isDocRecEdit, setDocRecEdit] = useState('')
   const theme = useTheme()
 
   const [value, setValue] = useState(0)
 
+  // querying patient data
   const { patient_id } = useParams()
   console.log('patient_id', patient_id)
   const queryClient = useQueryClient()
@@ -367,7 +381,7 @@ const PatientRecord = () => {
     if (email == '') {
       setEmail(data.email || patient.email)
     }
-    if (tel == '') {
+    if (tel === '') {
       setTel(data.tel || patient.tel)
     }
     if (gender == '') {
@@ -411,8 +425,23 @@ const PatientRecord = () => {
       }
     )
   }
+  // querying patient data
+  const query = useAuthedQuery(['patientsRecord'], getAllPatientsRecord, {
+    onSuccess: (data) => {
+      queryClient.setQueryData(['patientsRecord'], data)
+    },
+  })
+  // let query_data = query.data
+  let patient_record = queryClient.getQueryData('patientsRecord')
+  // if (patient_record) {
+  //   console.log('patient_record', patient_record)
+  // }
+  if (query.isLoading) {
+    console.log('patient record is loading')
+  }
+
   //timeout reset setError or setSuccess
-  const timeoutId = setTimeout(() => {
+  setTimeout(() => {
     setSuccess('')
     setError('')
   }, 30000)
@@ -423,348 +452,439 @@ const PatientRecord = () => {
   if (isError) {
     return <span>Error: {error.message}</span>
   }
-  const patientStatus = 'active' || 'inactive'
 
-  return (
-    <Container>
-      <RightContainer>
-        <UserDetailsContainer>
-          <div className='flex flex-col gap-1 mb-2'>
-            <Avatar
-              aria-label='patient'
-              className={`w-fit ${
-                patient.sex === 'male' ? 'bg-[#102c6fdf]' : 'bg-[#49b267]'
-              }`}
-            >
-              {patient.sex === 'male' ? (
-                <img src={Male} alt={data.sex || patient.sex} />
-              ) : (
-                <img src={Female} alt={data.sex || patient.sex} />
+  if (query.isSuccess) {
+    let past_test_records = patient_record.filter(
+      (item) => item.status !== 'active'
+    )
+    let patient_test_obj = patient_record.find(
+      (item) => item.status === 'active'
+    )
+
+    // cancel update patient record
+    const handleCancelResult = () => {
+      setDocDiagnosisEdit(false)
+      setTestResultEdit(false)
+      setDocRecEdit(false)
+    }
+
+    // handle update patient record
+    const handleTestRecordUpdate = () => {}
+
+    return (
+      <Container>
+        <RightContainer>
+          <UserDetailsContainer>
+            <div className='flex flex-col gap-1 mb-2'>
+              <Avatar
+                aria-label='patient'
+                className={`w-fit ${
+                  patient.sex === 'male' ? 'bg-[#102c6fdf]' : 'bg-[#49b267]'
+                }`}
+              >
+                {patient.sex === 'male' ? (
+                  <img src={Male} alt={data.sex || patient.sex} />
+                ) : (
+                  <img src={Female} alt={data.sex || patient.sex} />
+                )}
+              </Avatar>
+              <Username>{data.name || patient.name}</Username>
+              {patient_test_obj && (
+                <PatientStatus
+                  className={
+                    patient_test_obj.status === 'active'
+                      ? 'text-[#49b267]'
+                      : 'text-[#f6854e]'
+                  }
+                >
+                  {patient_test_obj.status || 'unactive'}
+                </PatientStatus>
               )}
-            </Avatar>
-            <Username>{data.name || patient.name}</Username>
-            <PatientStatus
-              className={
-                patientStatus === 'active' ? 'text-[#49b267]' : 'text-[#f6854e]'
-              }
-            >
-              {patientStatus}
-            </PatientStatus>
-          </div>
-          <PatientInfo>
-            <LabetText>gender</LabetText>
-            <DataText>{data.sex || patient.sex}</DataText>
-          </PatientInfo>
-          <PatientInfo>
-            <LabetText>age</LabetText>
-            <DataText>{data.age || patient.age}</DataText>
-          </PatientInfo>
-          <PatientInfo>
-            <LabetText>height</LabetText>
-            <DataText>176 cm</DataText>
-          </PatientInfo>
-          <PatientInfo>
-            <LabetText>weight</LabetText>
-            <DataText>67 kg</DataText>
-          </PatientInfo>
-        </UserDetailsContainer>
-        <AllergiesContainer>
-          <AllergySection />
-        </AllergiesContainer>
-        <CommonSyptomsContainer>
-          <CommonSymptoms />
-        </CommonSyptomsContainer>
-      </RightContainer>
-      <LeftContainer>
-        <Tabs
-          value={value}
-          onChange={handleChange}
-          indicatorColor='primary'
-          textColor='primary'
-          variant='fullWidth'
-          aria-label='action tabs example'
-        >
-          <Tab label='General' {...a11yProps(0)} />
-          <Tab label='Past Record' {...a11yProps(1)} />
-        </Tabs>
+            </div>
+            <PatientInfo>
+              <LabetText>gender</LabetText>
+              <DataText>{data.sex || patient.sex}</DataText>
+            </PatientInfo>
+            <PatientInfo>
+              <LabetText>age</LabetText>
+              <DataText>{data.age || patient.age}</DataText>
+            </PatientInfo>
+            <PatientInfo>
+              <LabetText>height</LabetText>
+              <DataText>176 cm</DataText>
+            </PatientInfo>
+            <PatientInfo>
+              <LabetText>weight</LabetText>
+              <DataText>67 kg</DataText>
+            </PatientInfo>
+          </UserDetailsContainer>
+          <AllergiesContainer>
+            <AllergySection />
+          </AllergiesContainer>
+          <CommonSyptomsContainer>
+            <CommonSymptoms />
+          </CommonSyptomsContainer>
+        </RightContainer>
+        <LeftContainer>
+          <Tabs
+            value={value}
+            onChange={handleChange}
+            indicatorColor='primary'
+            textColor='primary'
+            variant='fullWidth'
+            aria-label='action tabs example'
+          >
+            <Tab label='General' {...a11yProps(0)} />
+            <Tab label='Past Record' {...a11yProps(1)} />
+          </Tabs>
 
-        <TabPanel
-          value={value}
-          index={0}
-          dir={theme.direction}
-          style={{
-            fontFamily: 'montserrat',
-          }}
-        >
-          <Articles>
-            {error && <ErrorMessage>{error}</ErrorMessage>}
-            {success && <SuccessMessage>{success}</SuccessMessage>}
-            <SubTitle>Patient details</SubTitle>
-            <PersonDetailsContainer>
-              <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
-                <LabelContainer>
-                  <Label>Last name</Label>
-                  <EditIcon
-                    icon='ant-design:edit-outlined'
-                    onClick={() => setLastnameEdit(true)}
-                  />
-                </LabelContainer>
-                {isLastnameEdit ? (
-                  <Input
-                    type='text'
-                    value={lastname}
-                    setValue={setLastname}
-                    label={namesArr[1]}
-                  />
-                ) : (
-                  <Text>{namesArr[1]}</Text>
-                )}
-              </FormControl>
-              <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
-                <LabelContainer>
-                  <Label>First name</Label>
+          <TabPanel
+            value={value}
+            index={0}
+            dir={theme.direction}
+            style={{
+              fontFamily: 'montserrat',
+            }}
+          >
+            <Articles>
+              {error && <ErrorMessage>{error}</ErrorMessage>}
+              {success && <SuccessMessage>{success}</SuccessMessage>}
+              <SubTitle>Patient details</SubTitle>
+              <PersonDetailsContainer>
+                <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
+                  <LabelContainer>
+                    <Label>Last name</Label>
+                    <EditIcon
+                      icon='ant-design:edit-outlined'
+                      onClick={() => setLastnameEdit(true)}
+                    />
+                  </LabelContainer>
+                  {isLastnameEdit ? (
+                    <Input
+                      type='text'
+                      value={lastname}
+                      setValue={setLastname}
+                      label={namesArr[1]}
+                    />
+                  ) : (
+                    <Text>{namesArr[1]}</Text>
+                  )}
+                </FormControl>
+                <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
+                  <LabelContainer>
+                    <Label>First name</Label>
 
-                  <EditIcon
-                    icon='ant-design:edit-outlined'
-                    onClick={() => setFirstnameEdit(true)}
-                  />
-                </LabelContainer>
-                {isFirstnmEdit ? (
-                  <Input
-                    type='text'
-                    value={firstname}
-                    label={namesArr[0]}
-                    setValue={setFirstname}
-                  />
-                ) : (
-                  <Text>{namesArr[0]}</Text>
-                )}
-              </FormControl>
-              <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
-                <LabelContainer>
-                  <Label>Birth Date</Label>
-                  <EditIcon
-                    icon='ant-design:edit-outlined'
-                    onClick={() => setDOBEdit(true)}
-                  />
-                </LabelContainer>
-                {isDOBEdit ? (
-                  <CustomDateTimePicker
-                    value={new Date(data.DOB)}
-                    onChange={setDOB}
-                  />
-                ) : (
-                  <Text>{data.DOB || patient.DOB}</Text>
-                )}
-              </FormControl>
-              <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
-                <LabelContainer>
-                  <Label>Gender</Label>
-                  <EditIcon
-                    icon='ant-design:edit-outlined'
-                    onClick={() => setGenderEdit(true)}
-                  />
-                </LabelContainer>
-                {isGenderEdit ? (
-                  <Input
-                    type='select'
-                    value={gender}
-                    setValue={setGender}
-                    defaultValue={data.sex}
-                    options={['male', 'female']}
-                  />
-                ) : (
-                  <Text>{data.sex || patient.sex}</Text>
-                )}
-              </FormControl>
-              <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
-                <LabelContainer>
-                  <Label>Email</Label>
-                  <EditIcon
-                    icon='ant-design:edit-outlined'
-                    onClick={() => setEmailEdit(true)}
-                  />
-                </LabelContainer>
-                {isEmailEdit ? (
-                  <Input
-                    type={'email'}
-                    label={data.email}
-                    value={email}
-                    setValue={setEmail}
-                  />
-                ) : (
-                  <Text>{data.email || patient.email}</Text>
-                )}
-              </FormControl>
-              <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
-                <LabelContainer>
-                  <Label>Tel</Label>
-                  <EditIcon
-                    icon='ant-design:edit-outlined'
-                    onClick={() => setTelEdit(true)}
-                  />
-                </LabelContainer>
-                {isTelEdit ? (
-                  <Input
-                    type='tel'
-                    label={data.tel || patient.tel}
-                    value={tel}
-                    setValue={setTel}
-                  />
-                ) : (
-                  <Text>{formatTelNumber(data.tel || patient.tel)}</Text>
-                )}
-              </FormControl>
-              <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
-                <LabelContainer>
-                  <Label>Region</Label>
-                  <EditIcon
-                    icon='ant-design:edit-outlined'
-                    onClick={() => setRegionEdit(true)}
-                  />
-                </LabelContainer>
-                {isRegionEdit ? (
-                  <Input
-                    type='text'
-                    label={data.region}
-                    value={region}
-                    setValue={setRegion}
-                  />
-                ) : (
-                  <Text>{data.region || patient.region}</Text>
-                )}
-              </FormControl>
-              <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
-                <LabelContainer>
-                  <Label>City</Label>
-                  <EditIcon
-                    icon='ant-design:edit-outlined'
-                    onClick={() => setCityEdit(true)}
-                  />
-                </LabelContainer>
-                {isCityEdit ? (
-                  <Input
-                    type='text'
-                    label={data.city}
-                    value={city}
-                    setValue={setCity}
-                  />
-                ) : (
-                  <Text>{data.city || patient.city}</Text>
-                )}
-              </FormControl>
-            </PersonDetailsContainer>
+                    <EditIcon
+                      icon='ant-design:edit-outlined'
+                      onClick={() => setFirstnameEdit(true)}
+                    />
+                  </LabelContainer>
+                  {isFirstnmEdit ? (
+                    <Input
+                      type='text'
+                      value={firstname}
+                      label={namesArr[0]}
+                      setValue={setFirstname}
+                    />
+                  ) : (
+                    <Text>{namesArr[0]}</Text>
+                  )}
+                </FormControl>
+                <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
+                  <LabelContainer>
+                    <Label>Birth Date</Label>
+                    <EditIcon
+                      icon='ant-design:edit-outlined'
+                      onClick={() => setDOBEdit(true)}
+                    />
+                  </LabelContainer>
+                  {isDOBEdit ? (
+                    <CustomDateTimePicker
+                      value={new Date(data.DOB)}
+                      onChange={setDOB}
+                    />
+                  ) : (
+                    <Text>{data.DOB || patient.DOB}</Text>
+                  )}
+                </FormControl>
+                <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
+                  <LabelContainer>
+                    <Label>Gender</Label>
+                    <EditIcon
+                      icon='ant-design:edit-outlined'
+                      onClick={() => setGenderEdit(true)}
+                    />
+                  </LabelContainer>
+                  {isGenderEdit ? (
+                    <Input
+                      type='select'
+                      value={gender}
+                      setValue={setGender}
+                      defaultValue={data.sex}
+                      options={['male', 'female']}
+                    />
+                  ) : (
+                    <Text>{data.sex || patient.sex}</Text>
+                  )}
+                </FormControl>
+                <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
+                  <LabelContainer>
+                    <Label>Email</Label>
+                    <EditIcon
+                      icon='ant-design:edit-outlined'
+                      onClick={() => setEmailEdit(true)}
+                    />
+                  </LabelContainer>
+                  {isEmailEdit ? (
+                    <Input
+                      type={'email'}
+                      label={data.email}
+                      value={email}
+                      setValue={setEmail}
+                    />
+                  ) : (
+                    <Text>{data.email || patient.email}</Text>
+                  )}
+                </FormControl>
+                <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
+                  <LabelContainer>
+                    <Label>Tel</Label>
+                    <EditIcon
+                      icon='ant-design:edit-outlined'
+                      onClick={() => setTelEdit(true)}
+                    />
+                  </LabelContainer>
+                  {isTelEdit ? (
+                    <Input
+                      type='tel'
+                      label={data.tel || patient.tel}
+                      value={tel}
+                      setValue={setTel}
+                    />
+                  ) : (
+                    <Text>{formatTelNumber(data.tel || patient.tel)}</Text>
+                  )}
+                </FormControl>
+                <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
+                  <LabelContainer>
+                    <Label>Region</Label>
+                    <EditIcon
+                      icon='ant-design:edit-outlined'
+                      onClick={() => setRegionEdit(true)}
+                    />
+                  </LabelContainer>
+                  {isRegionEdit ? (
+                    <Input
+                      type='text'
+                      label={data.region}
+                      value={region}
+                      setValue={setRegion}
+                    />
+                  ) : (
+                    <Text>{data.region || patient.region}</Text>
+                  )}
+                </FormControl>
+                <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
+                  <LabelContainer>
+                    <Label>City</Label>
+                    <EditIcon
+                      icon='ant-design:edit-outlined'
+                      onClick={() => setCityEdit(true)}
+                    />
+                  </LabelContainer>
+                  {isCityEdit ? (
+                    <Input
+                      type='text'
+                      label={data.city}
+                      value={city}
+                      setValue={setCity}
+                    />
+                  ) : (
+                    <Text>{data.city || patient.city}</Text>
+                  )}
+                </FormControl>
+              </PersonDetailsContainer>
 
-            {isFirstnmEdit ||
-            isLastnameEdit ||
-            isEmailEdit ||
-            isTelEdit ||
-            isGenderEdit ||
-            isDOBEdit ||
-            isCityEdit ||
-            isRegionEdit ? (
-              <ButtonContainer>
-                <Button
-                  color='#f6854e'
-                  hoverColor='#f0783d'
-                  variant='contained'
-                  type='button'
-                  onClick={handlePatientUpdate}
-                >
-                  make changes
-                </Button>
-                <Button
-                  variant='outlined'
-                  color='#102c6fdf'
-                  hoverColor={'#102c6f'}
-                  onClick={handleUpdateCancel}
-                >
-                  cancel
-                </Button>
-              </ButtonContainer>
+              {isFirstnmEdit ||
+              isLastnameEdit ||
+              isEmailEdit ||
+              isTelEdit ||
+              isGenderEdit ||
+              isDOBEdit ||
+              isCityEdit ||
+              isRegionEdit ? (
+                <ButtonContainer>
+                  <Button
+                    color='#f6854e'
+                    hoverColor='#f0783d'
+                    variant='contained'
+                    type='button'
+                    onClick={handlePatientUpdate}
+                  >
+                    make changes
+                  </Button>
+                  <Button
+                    variant='outlined'
+                    color='#102c6fdf'
+                    hoverColor={'#102c6f'}
+                    onClick={handleUpdateCancel}
+                  >
+                    cancel
+                  </Button>
+                </ButtonContainer>
+              ) : (
+                <></>
+              )}
+            </Articles>
+            <Articles>
+              <SubTitle>TEST</SubTitle>
+              {patient_test_obj ? (
+                <PatientTest
+                  test_id={patient_test_obj.test_id}
+                  patient_id={patient_test_obj.patient_id}
+                  test_name={patient_test_obj.test_name}
+                  test_description={patient_test_obj.test_description}
+                  status={patient_test_obj.status}
+                  date_modified={patient_test_obj.date_modified}
+                />
+              ) : (
+                <Text>No Added Patient Test Yet</Text>
+              )}
+            </Articles>
+            <Articles>
+              <SubTitle>DOCTOR'S RESULTS</SubTitle>
+              {patient_test_obj ? (
+                <>
+                  <ResultContainer>
+                    <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
+                      <LabelContainer>
+                        <Label>test result</Label>
+                        <EditIcon
+                          icon='ant-design:edit-outlined'
+                          onClick={() => setTestResultEdit(true)}
+                        />
+                      </LabelContainer>
+                      {isTestResultEdit ? (
+                        <Input
+                          type='text'
+                          value={testresult}
+                          setValue={setTestResult}
+                          label={
+                            patient_test_obj.test_result || 'add a test result'
+                          }
+                        />
+                      ) : (
+                        <Text>
+                          {patient_test_obj.test_result || 'add a test result'}
+                        </Text>
+                      )}
+                    </FormControl>
+                    <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
+                      <LabelContainer>
+                        <Label>doctor diagnosis</Label>
+                        <EditIcon
+                          icon='ant-design:edit-outlined'
+                          onClick={() => setDocDiagnosisEdit(true)}
+                        />
+                      </LabelContainer>
+                      {isDocDiagnosisEdit ? (
+                        <Input
+                          type='text'
+                          value={docdiagnosis}
+                          setValue={setDocDiagonsis}
+                          label={'write a diagnosis'}
+                        />
+                      ) : (
+                        <Text>
+                          {patient_test_obj.doc_diagnosis ||
+                            'write a diagnosis'}
+                        </Text>
+                      )}
+                    </FormControl>
+                    <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
+                      <LabelContainer>
+                        <Label>doctor recommendation & prescription</Label>
+                        <EditIcon
+                          icon='ant-design:edit-outlined'
+                          onClick={() => setDocRecEdit(true)}
+                        />
+                      </LabelContainer>
+                      {isDocRecEdit ? (
+                        <Input
+                          type='text'
+                          value={docrec}
+                          setValue={setDocRec}
+                          label={
+                            patient_test_obj.doc_recommendation ||
+                            'add a prescription'
+                          }
+                        />
+                      ) : (
+                        <Text>
+                          {patient_test_obj.doc_recommendation ||
+                            "'add a prescription'"}
+                        </Text>
+                      )}
+                    </FormControl>
+                  </ResultContainer>
+                  {isTestResultEdit || isDocDiagnosisEdit || isDocRecEdit ? (
+                    <ButtonContainer>
+                      <Button
+                        color='#f6854e'
+                        hoverColor='#f0783d'
+                        variant='contained'
+                        type='button'
+                        onClick={handleTestRecordUpdate}
+                      >
+                        submit result
+                      </Button>
+                      <Button
+                        variant='outlined'
+                        color='#102c6fdf'
+                        hoverColor={'#102c6f'}
+                        onClick={handleCancelResult}
+                      >
+                        cancel
+                      </Button>
+                    </ButtonContainer>
+                  ) : (
+                    <></>
+                  )}
+                </>
+              ) : (
+                <Text>No Added Patient Test Yet</Text>
+              )}
+            </Articles>
+          </TabPanel>
+          <TabPanel
+            value={value}
+            index={1}
+            dir={theme.direction}
+            style={{ fontFamily: 'montserrat' }}
+          >
+            {past_test_records ? (
+              past_test_records.map((record, key) => (
+                <PatientTest
+                  key={key}
+                  test_id={record.test_id}
+                  patient_id={record.patient_id}
+                  test_name={record.test_name}
+                  test_description={record.test_description}
+                  status={record.status}
+                  test_result={record.test_result}
+                  doc_diagnosis={record.doc_diagnosis}
+                  doc_recommendation={record.doc_recommendation}
+                  date_modified={record.date_modified}
+                />
+              ))
             ) : (
-              <></>
+              <>no past records yet</>
             )}
-          </Articles>
-          <Articles>
-            <SubTitle>TEST</SubTitle>
-            <PatientTest />
-          </Articles>
-          <Articles>
-            <SubTitle>DOCTOR'S RESULTS</SubTitle>
-            <ResultContainer>
-              <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
-                <LabelContainer>
-                  <Label>test result</Label>
-                  <EditIcon
-                    icon='ant-design:edit-outlined'
-                    onClick={() => setLastnameEdit(true)}
-                  />
-                </LabelContainer>
-                {isLastnameEdit ? (
-                  <Input
-                    type='text'
-                    value={lastname}
-                    setValue={setLastname}
-                    label={namesArr[1]}
-                  />
-                ) : (
-                  <Text>postive</Text>
-                )}
-              </FormControl>
-              <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
-                <LabelContainer>
-                  <Label>doctor diagnosis</Label>
-                  <EditIcon
-                    icon='ant-design:edit-outlined'
-                    onClick={() => setLastnameEdit(true)}
-                  />
-                </LabelContainer>
-                {isLastnameEdit ? (
-                  <Input
-                    type='text'
-                    value={lastname}
-                    setValue={setLastname}
-                    label={namesArr[1]}
-                  />
-                ) : (
-                  <Text>melanoma was found</Text>
-                )}
-              </FormControl>
-              <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
-                <LabelContainer>
-                  <Label>doctor recommendation</Label>
-                  <EditIcon
-                    icon='ant-design:edit-outlined'
-                    onClick={() => setLastnameEdit(true)}
-                  />
-                </LabelContainer>
-                {isLastnameEdit ? (
-                  <Input
-                    type='text'
-                    value={lastname}
-                    setValue={setLastname}
-                    label={namesArr[1]}
-                  />
-                ) : (
-                  <Text>chemotherapy</Text>
-                )}
-              </FormControl>
-            </ResultContainer>
-          </Articles>
-        </TabPanel>
-        <TabPanel
-          value={value}
-          index={1}
-          dir={theme.direction}
-          style={{ fontFamily: 'montserrat' }}
-        >
-          Item Two
-        </TabPanel>
-        {/* </AppBar> */}
-      </LeftContainer>
-    </Container>
-  )
+          </TabPanel>
+          {/* </AppBar> */}
+        </LeftContainer>
+      </Container>
+    )
+  }
 }
-
 export default PatientRecord

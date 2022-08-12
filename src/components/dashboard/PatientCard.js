@@ -99,7 +99,7 @@ const Dot = styled.div`
       mx-2
   `}
 `
-const RegDate = styled.div`
+export const RegDate = styled.div`
   ${tw`
   md:text-sm
   text-xs

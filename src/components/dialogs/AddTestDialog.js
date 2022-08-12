@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useQueryClient } from 'react-query'
 import useAuthedMutation from '../../hooks/use-auth-mutation-hook'
+import { postPatientRecord } from '../../services/tests-api-service'
 import PropTypes from 'prop-types'
 import {
   Dialog,
@@ -38,9 +39,52 @@ const EditPatientDialog = ({ id, isOpen, setIsOpen }) => {
   if (testDesc === '' && testName === '') {
     const handleError = () => setError('inputs cannot be empty')
   }
-  // const { isLoading, mutate, status } = useAuthedMutation()
+  // mutation
+  const { isLoading, mutate, status } = useAuthedMutation(postPatientRecord, {
+    onMutate: async (newPatient) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries('patientsRecord')
+      // Snapshot the previous value
+      const previousPatients = queryClient.getQueryData('patientsRecord')
+      // Optimistically update to the new value
+      queryClient.setQueryData('patientsRecord', (old) => [...old, newPatient])
+
+      // Return a context object with the snapshotted value
+      return { previousPatients }
+    },
+  })
   const handleSubmit = (e) => {
     e.preventDefault()
+    const Test = {
+      test_name: testName,
+      test_description: testDesc,
+    }
+    mutate(Test, {
+      onSuccess: async (response, variable, context) => {
+        const data = await response.json()
+        if (
+          response.status === 201 ||
+          response.status === 200 ||
+          data.status === 'success'
+        ) {
+          setSuccess(data.message)
+
+          setIsOpen(false)
+          queryClient.invalidateQueries('patientsRecord')
+        } else {
+          setError(data.message)
+        }
+      },
+      onError: async (err, variables, context) => {
+        queryClient.setQueryData('patientsRecord', context.previousPatients)
+        setError(err)
+        console.log('Error while posting...', err)
+        console.log('data sent is', variables)
+      },
+      onSettled: async () => {
+        queryClient.invalidateQueries('patientsRecord')
+      },
+    })
   }
 
   const handleClose = () => {
@@ -48,7 +92,7 @@ const EditPatientDialog = ({ id, isOpen, setIsOpen }) => {
   }
 
   //timeout reset setError or setSuccess
-  const timeoutId = setTimeout(() => {
+  setTimeout(() => {
     setSuccess('')
     setError('')
   }, 30000)
@@ -101,7 +145,7 @@ const EditPatientDialog = ({ id, isOpen, setIsOpen }) => {
               variant='contained'
               type='submit'
             >
-              edit
+              add
             </Button>
             <Button
               variant='outlined'

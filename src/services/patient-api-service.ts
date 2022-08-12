@@ -26,9 +26,10 @@ const headers = new Headers({
   'Content-Type': 'application/json',
 })
 
+const URL = `${process.env.REACT_APP_BASE_URI}/patient`
 // post a patient
 export const postPatient = async (patient: Patient) => {
-  const response = await fetch(`${process.env.REACT_APP_BASE_URI}/patient`, {
+  const response = await fetch(URL, {
     method: 'POST',
     headers: headers,
     body: JSON.stringify(patient),
@@ -37,7 +38,7 @@ export const postPatient = async (patient: Patient) => {
 }
 // get all patients
 export const getAllPatients = async () => {
-  const response = await fetch(`${process.env.REACT_APP_BASE_URI}/patient`, {
+  const response = await fetch(URL, {
     method: 'GET',
     headers: headers,
   })
@@ -45,35 +46,26 @@ export const getAllPatients = async () => {
 }
 // get a single patient
 export const getAPatient = async (id: string) => {
-  const response = await fetch(
-    `${process.env.REACT_APP_BASE_URI}/patient/${id}`,
-    {
-      method: 'GET',
-      headers: headers,
-    }
-  )
+  const response = await fetch(`${URL}/${id}`, {
+    method: 'GET',
+    headers: headers,
+  })
   return await response.json()
 }
 // update a patient
 export const updatePatient = async ({ id, patient }: EditPatient) => {
-  const response = await fetch(
-    `${process.env.REACT_APP_BASE_URI}/patient/${id}`,
-    {
-      method: 'PUT',
-      headers: headers,
-      body: JSON.stringify(patient),
-    }
-  )
+  const response = await fetch(`${URL}/${id}`, {
+    method: 'PUT',
+    headers: headers,
+    body: JSON.stringify(patient),
+  })
   return response
 }
 // delete a patient TODO later
 export const deletePatient = async (id: string) => {
-  const response = await fetch(
-    `${process.env.REACT_APP_BASE_URI}/patient/${id}`,
-    {
-      method: 'DELETE',
-      headers: headers,
-    }
-  )
+  const response = await fetch(`${URL}/${id}`, {
+    method: 'DELETE',
+    headers: headers,
+  })
   return response
 }

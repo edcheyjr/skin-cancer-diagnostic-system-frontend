@@ -101,3 +101,40 @@ export function mapLabelToFullDiseaseName(label: string) {
   }
   return 'health skin'
 }
+
+export function formatConfidenceToPercentage(confidence: string) {
+  let float_conf = parseFloat(confidence).toFixed(2)
+  return `${float_conf}%`
+}
+
+export function formatScoreToArray(score: string) {
+  const label_map = ['nv', 'mel', 'bkl', 'bcc', 'akiec', 'vasc', 'df']
+  const newScoreArr = new Array()
+  let scoreArr = score.split(' ')
+  scoreArr.forEach((scr, key) => {
+    const percentage_scr = formatStringDecimalToPercentage(scr)
+    newScoreArr.push({
+      conf: percentage_scr,
+      label: label_map[key],
+    })
+  })
+  return newScoreArr
+}
+
+function formatStringDecimalToPercentage(a: string) {
+  let float = parseFloat(a)
+  let percentage = float * 100
+  return percentage.toFixed(2)
+}
+
+export function convertFileToBase64(filePath: string) {}
+
+const blobToBase64 = (blob: Blob) => {
+  return new Promise((resolve, _) => {
+    const reader = new FileReader()
+    reader.readAsDataURL(blob)
+    reader.onloadend = function () {
+      resolve(reader.result)
+    }
+  })
+}

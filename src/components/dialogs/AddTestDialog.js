@@ -95,7 +95,7 @@ const EditPatientDialog = ({ id, isOpen, setIsOpen }) => {
   setTimeout(() => {
     setSuccess('')
     setError('')
-  }, 30000)
+  }, 40000)
   return (
     <Dialog
       open={isOpen}
@@ -145,7 +145,7 @@ const EditPatientDialog = ({ id, isOpen, setIsOpen }) => {
               variant='contained'
               type='submit'
             >
-              add
+              {isLoading ? 'adding...' : ' add'}
             </Button>
             <Button
               variant='outlined'

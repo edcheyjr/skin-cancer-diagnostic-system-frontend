@@ -8,7 +8,7 @@ import { Icon } from '@iconify/react'
 import { useParams } from 'react-router-dom'
 import { getAPatient, updatePatient } from '../../services/patient-api-service'
 import {
-  getAPatientRecord,
+  updatePatientRecord,
   getAllPatientsRecord,
 } from '../../services/tests-api-service'
 import AllergySection from './allergys'
@@ -440,6 +440,21 @@ const PatientRecord = () => {
     console.log('patient record is loading')
   }
 
+  // update test record mutation
+  const mutateRecord = useAuthedMutation(updatePatientRecord, {
+    onMutate: async (newPatient) => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries('patientsRecord')
+      // Snapshot the previous value
+      const previousRecord = queryClient.getQueryData('patientsRecord')
+      // Optimistically update to the new value
+      queryClient.setQueryData('patientsRecord', (old) => [...old, newPatient])
+
+      // Return a context object with the snapshotted value
+      return { previousRecord }
+    },
+  })
+
   //timeout reset setError or setSuccess
   setTimeout(() => {
     setSuccess('')
@@ -469,7 +484,42 @@ const PatientRecord = () => {
     }
 
     // handle update patient record
-    const handleTestRecordUpdate = () => {}
+    const handleTestRecordUpdate = () => {
+      const TestUpdate = {
+        test_name: patient_test_obj.test_name,
+        test_description: patient_test_obj.test_description,
+        test_result: '',
+        doc_diagnosis: '',
+        doc_recommendation: '',
+      }
+      mutateRecord.mutate(
+        { id: patient_test_obj.test_id, diagnosis: TestUpdate },
+        {
+          onSuccess: async (response, variable, context) => {
+            const data = await response.json()
+            if (
+              response.status === 201 ||
+              response.status === 200 ||
+              data.status === 'success'
+            ) {
+              setUpdateSuccess(data.message)
+              queryClient.invalidateQueries('patientsRecord')
+            } else {
+              setRecordsErrMessage(data.message)
+            }
+          },
+          onError: async (err, variables, context) => {
+            queryClient.setQueryData('patientsRecord', context.previousRecord)
+            setError(err)
+            console.log('Error while updating...', err)
+            console.log('data sent is', variables)
+          },
+          onSettled: async () => {
+            queryClient.invalidateQueries('patientsRecord')
+          },
+        }
+      )
+    }
 
     return (
       <Container>
@@ -547,7 +597,7 @@ const PatientRecord = () => {
             }}
           >
             <Articles>
-              {error && <ErrorMessage>{error}</ErrorMessage>}
+              {errorMessage && <ErrorMessage>{errorMessage}</ErrorMessage>}
               {success && <SuccessMessage>{success}</SuccessMessage>}
               <SubTitle>Patient details</SubTitle>
               <PersonDetailsContainer>
@@ -836,7 +886,9 @@ const PatientRecord = () => {
                         type='button'
                         onClick={handleTestRecordUpdate}
                       >
-                        submit result
+                        {mutateRecord.isLoading
+                          ? 'submiting...'
+                          : 'submit result'}
                       </Button>
                       <Button
                         variant='outlined'

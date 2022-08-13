@@ -7,6 +7,10 @@ import { Text } from '..'
 import ImageCard from './TestImageCard'
 import AddImageDialog from '../../dialogs/AddImageDialog'
 import { RegDate } from '../../dashboard/PatientCard'
+import { useQueryClient } from 'react-query'
+import useAuthedQuery from '../../../hooks/user-auth-query-hook'
+import { getAllImages } from '../../../services/test-images-api-service'
+import { Skeleton } from '@mui/material'
 
 const Container = styled.div`
   ${tw`
@@ -142,73 +146,109 @@ const PatientTest = ({
   doc_recommendation,
   date_modified,
 }) => {
+  const currentClient = useQueryClient()
+
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
   const [isVisible, setIsVisible] = React.useState(false)
-  return (
-    <Container className='relative'>
-      {status !== 'active' && (
-        <CloseMoreDetailsBtn onClick={() => setIsVisible(!isVisible)}>
-          {isVisible ? 'view less' : 'view more'}
-          <ViewMoreIcon
-            icon='akar-icons:chevron-down'
-            className={`transform ease-out duration-150 ${
-              isVisible ? 'rotate-[180deg]' : 'rotate-0'
-            }`}
-          />
-        </CloseMoreDetailsBtn>
-      )}
-      <TestTitle>{test_name}</TestTitle>
-      <TestDescription className='mt-2'>{test_description}</TestDescription>
-      {status !== 'active' && (
-        <TestDescription className='mt-2'>
-          result: {test_result}
-        </TestDescription>
-      )}
-      {status !== 'active' && (
-        <TestDescription className='mt-2'>
-          doctor diagnosis: {doc_diagnosis}
-        </TestDescription>
-      )}
-      {status !== 'active' && (
-        <TestDescription className='mt-2'>
-          doctor recommendation: {doc_recommendation}
-        </TestDescription>
-      )}
-      {!isVisible && status !== 'active' ? (
-        <></>
-      ) : (
-        <TestImagesContainer>
-          {status === 'active' && (
-            <AddPhotoButton
-              className='group'
-              onClick={() => setIsDialogOpen(true)}
-            >
-              <ImageIcon icon='bx:image-add' />
-              <div className='flex py-4 px-4  gap-2'>
-                <IconButton color='warning' aria-label='add test image sample'>
-                  <CustomIcon
-                    icon='ant-design:file-image-twotone'
-                    className='mx-auto my-auto'
-                  />
-                </IconButton>
-                <TextContainer>
-                  <Text>add test image</Text>
-                  <MaxSizeText>max 54.6 mb </MaxSizeText>
-                </TextContainer>
-              </div>
-            </AddPhotoButton>
-          )}
-          {/*  image input form dialog */}
-          <AddImageDialog isOpen={isDialogOpen} setIsOpen={setIsDialogOpen} />
 
-          <ImageCard />
-        </TestImagesContainer>
-      )}
-      {status !== 'active' && (
-        <RegDate className='mt-4'>{date_modified}</RegDate>
-      )}
-    </Container>
+  // get all images from backend
+  const { isLoading, isError, error, data, isSuccess } = useAuthedQuery(
+    ['images'],
+    getAllImages,
+    {
+      onSuccess: (data) => {
+        currentClient.setQueryData('images', data)
+      },
+    }
   )
+  if (isError) {
+    return <span>Error: {error.message}</span>
+  }
+
+  if (isSuccess) {
+    console.log('data', data.data)
+    const filterTestImages = data.data.filter(
+      (image) => image.test_id === test_id
+    )
+    return (
+      <Container className='relative'>
+        {status !== 'active' && (
+          <CloseMoreDetailsBtn onClick={() => setIsVisible(!isVisible)}>
+            {isVisible ? 'view less' : 'view more'}
+            <ViewMoreIcon
+              icon='akar-icons:chevron-down'
+              className={`transform ease-out duration-150 ${
+                isVisible ? 'rotate-[180deg]' : 'rotate-0'
+              }`}
+            />
+          </CloseMoreDetailsBtn>
+        )}
+        <TestTitle>{test_name}</TestTitle>
+        <TestDescription className='mt-2'>{test_description}</TestDescription>
+        {status !== 'active' && (
+          <TestDescription className='mt-2'>
+            result: {test_result}
+          </TestDescription>
+        )}
+        {status !== 'active' && (
+          <TestDescription className='mt-2'>
+            doctor diagnosis: {doc_diagnosis}
+          </TestDescription>
+        )}
+        {status !== 'active' && (
+          <TestDescription className='mt-2'>
+            doctor recommendation: {doc_recommendation}
+          </TestDescription>
+        )}
+        {!isVisible && status !== 'active' ? (
+          <></>
+        ) : (
+          <TestImagesContainer>
+            {status === 'active' && (
+              <AddPhotoButton
+                className='group'
+                onClick={() => setIsDialogOpen(true)}
+              >
+                <ImageIcon icon='bx:image-add' />
+                <div className='flex py-4 px-4  gap-2'>
+                  <IconButton
+                    color='warning'
+                    aria-label='add test image sample'
+                  >
+                    <CustomIcon
+                      icon='ant-design:file-image-twotone'
+                      className='mx-auto my-auto'
+                    />
+                  </IconButton>
+                  <TextContainer>
+                    <Text>add test image</Text>
+                    <MaxSizeText>max 54.6 mb </MaxSizeText>
+                  </TextContainer>
+                </div>
+              </AddPhotoButton>
+            )}
+            {/*  image input form dialog */}
+            <AddImageDialog isOpen={isDialogOpen} setIsOpen={setIsDialogOpen} />
+
+            {filterTestImages ? (
+              filterTestImages.map((image, key) =>
+                isLoading ? (
+                  <Skeleton key={key} />
+                ) : (
+                  <ImageCard {...image} key={key} />
+                )
+              )
+            ) : (
+              <Text>No Test Image added</Text>
+            )}
+          </TestImagesContainer>
+        )}
+        {status !== 'active' && (
+          <RegDate className='mt-4'>{date_modified}</RegDate>
+        )}
+      </Container>
+    )
+  }
 }
 PatientTest.propType = {
   test_id: PropTypes.string.isRequired,

@@ -10,35 +10,11 @@ import IconButton from '@mui/material/IconButton'
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import style from 'styled-components'
 import tw from 'twin.macro'
-import { mapLabelToFullDiseaseName } from '../../../helpers/utils'
-
-const SampleClassfication = [
-  {
-    conf: 45,
-    label: 'bkl',
-  },
-  {
-    conf: 35,
-    label: 'mel',
-  },
-  {
-    conf: 25,
-    label: 'nv',
-  },
-  {
-    conf: 15,
-    label: 'bcc',
-  },
-  {
-    conf: 55,
-    label: 'akiec',
-  },
-  {
-    conf: 65,
-    label: 'vasc',
-  },
-  { conf: 5, label: 'df' },
-]
+import {
+  formatConfidenceToPercentage,
+  formatScoreToArray,
+  mapLabelToFullDiseaseName,
+} from '../../../helpers/utils'
 
 const Localization = style.div`${tw`
     rounded-md
@@ -114,35 +90,43 @@ const ExpandMore = styled((props) => {
   }),
 }))
 
-const TestImageCard = (props) => {
+const TestImageCard = ({
+  id,
+  image_id,
+  test_id,
+  image_url,
+  localization,
+  classification,
+  confidence,
+  date_modified,
+  scores,
+}) => {
   const [expanded, setExpanded] = React.useState(false)
-
+  console.log('id', id)
+  console.log('image_id', image_id)
+  console.log('test_id', test_id)
+  console.log('date_modified', date_modified)
+  const formattedScoreArr = formatScoreToArray(scores)
   const handleExpandClick = () => {
     setExpanded(!expanded)
   }
-
   return (
     <Card sx={{ maxWidth: 345, position: 'relative' }} elevation={3}>
-      <Localization>chest</Localization>
-      <CardMedia
-        component='img'
-        height='90'
-        image='http://localhost:5000/get-image/test_sample_1660058607_a2dec70d-b884-4a5b-b434-03a558e15538.jpg'
-        alt='image'
-      />
+      <Localization>{localization}</Localization>
+      <CardMedia component='img' height='90' image={image_url} alt='image' />
       <CardContent>
         <div className='flex justify-between'>
           <div>
             <InfoContainer>
               <LabelText>type found &gt;</LabelText>
-              <ClassficationText>bascal cell carcinoma</ClassficationText>
+              <ClassficationText>{classification}</ClassficationText>
             </InfoContainer>
             <InfoContainer>
               <LabelText>localization &gt;</LabelText>
-              <ClassficationText>chest</ClassficationText>
+              <ClassficationText>{localization}</ClassficationText>
             </InfoContainer>
           </div>
-          <Confidence>38%</Confidence>
+          <Confidence>{formatConfidenceToPercentage(confidence)}</Confidence>
         </div>
       </CardContent>
       <CardActions disableSpacing>
@@ -160,12 +144,9 @@ const TestImageCard = (props) => {
       <Collapse in={expanded} timeout='auto' unmountOnExit>
         <CardContent>
           <div className='flex flex-col gap-2'>
-            {SampleClassfication.map((item, key) => (
+            {formattedScoreArr.map((item, key) => (
               <ClassficationBar key={key}>
-                <ClassficationLabel
-                  title={mapLabelToFullDiseaseName(item.label)}
-                  key={key}
-                >
+                <ClassficationLabel title={classification} key={key}>
                   {item.label}
                 </ClassficationLabel>
 
@@ -175,9 +156,9 @@ const TestImageCard = (props) => {
                     className={`${
                       item.conf >= 75
                         ? 'bg-[#24f0ce]'
-                        : item.conf >= 50 && item.conf <= 74
+                        : item.conf <= 74 && item.conf >= 50
                         ? 'bg-[#49b267]'
-                        : item.conf <= 49 && item.conf >= 35
+                        : item.conf <= 49 && item.conf >= 29
                         ? 'bg-orange-500'
                         : 'bg-red-600'
                     } text-xs font-medium text-blue-100 text-center p-1 leading-none rounded-full `}
@@ -196,6 +177,16 @@ const TestImageCard = (props) => {
   )
 }
 
-TestImageCard.propTypes = {}
+TestImageCard.propTypes = {
+  id: PropTypes.string.isRequired,
+  image_id: PropTypes.string.isRequired,
+  test_id: PropTypes.string.isRequired,
+  image_url: PropTypes.string.isRequired,
+  localization: PropTypes.string.isRequired,
+  classfication: PropTypes.string.isRequired,
+  confidence: PropTypes.string.isRequired,
+  date_modified: PropTypes.string.isRequired,
+  score: PropTypes.string.isRequired,
+}
 
 export default TestImageCard

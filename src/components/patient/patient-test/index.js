@@ -166,7 +166,7 @@ const PatientTest = ({
   }
 
   if (isSuccess) {
-    console.log('data', data.data)
+    console.log('images data', data)
     const filterTestImages = data.data.filter(
       (image) => image.test_id === test_id
     )
@@ -228,7 +228,11 @@ const PatientTest = ({
               </AddPhotoButton>
             )}
             {/*  image input form dialog */}
-            <AddImageDialog isOpen={isDialogOpen} setIsOpen={setIsDialogOpen} />
+            <AddImageDialog
+              test_id={test_id}
+              isOpen={isDialogOpen}
+              setIsOpen={setIsDialogOpen}
+            />
 
             {filterTestImages ? (
               filterTestImages.map((image, key) =>

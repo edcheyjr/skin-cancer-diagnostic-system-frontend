@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useQueryClient } from 'react-query'
 import useAuthedMutation from '../../hooks/use-auth-mutation-hook'
+import { postImage } from '../../services/test-images-api-service'
 import PropTypes from 'prop-types'
 import {
   Dialog,
@@ -17,12 +18,13 @@ import {
   ErrorMessage,
   SuccessMessage,
 } from './NewPatientDialog'
+import { convertFileToBase64 } from '../../helpers/utils'
 
 const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction='up' ref={ref} {...props} />
 })
 
-const EditPatientDialog = ({ id, isOpen, setIsOpen }) => {
+const AddImageDialog = ({ test_id, isOpen, setIsOpen }) => {
   const queryClient = useQueryClient()
 
   // get query data of a specific patient for editing
@@ -30,25 +32,86 @@ const EditPatientDialog = ({ id, isOpen, setIsOpen }) => {
   // name split
 
   const [localization, setLocalization] = useState('')
-  const [testDesc, setTestDesc] = useState('')
+  const [selectedFile, setSelectedFile] = useState()
+  const [isFileSelected, setIsFileSelected] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
 
-  // validation
-  if (localization === '') {
-    const handleError = () => setError('inputs cannot be empty')
-  }
-  // const { isLoading, mutate, status } = useAuthedMutation()
-  const handleSubmit = (e) => {
-    e.preventDefault()
+  const changeHandler = (e) => {
+    const file = e.target.files[0]
+    setSelectedFile(file)
+    if (file) {
+      setIsFileSelected(true)
+    } else {
+      setIsFileSelected(false)
+    }
   }
 
+  // validation
+  if (localization == '' || !isFileSelected) {
+    const handleError = () => setError('inputs cannot be empty')
+  }
+  // autheticated mutation
+  const { isLoading, status, mutate } = useAuthedMutation(postImage, {
+    onMutate: async () => {
+      // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
+      await queryClient.cancelQueries('images')
+      // Snapshot the previous value
+      const previousImage = queryClient.getQueryData('images')
+      // Optimistically update to the new value
+      console.log('previousImage', previousImage)
+      // Return a context object with the snapshotted value
+      return { previousImage }
+    },
+  })
+
+  // const { isLoading, mutate, status } = useAuthedMutation()
+  const handleSubmit = async (e) => {
+    e.preventDefault()
+    if (isFileSelected) {
+      const fileBase64 = await convertFileToBase64(selectedFile)
+
+      const Image = {
+        test_id,
+        localization,
+        imageBase64: fileBase64,
+      }
+      mutate(Image, {
+        onSuccess: async (response, variable, context) => {
+          const data = await response.json()
+          if (
+            response.status === 201 ||
+            response.status === 200 ||
+            data.status === 'success'
+          ) {
+            setSuccess(data.message)
+            setIsFileSelected(false)
+            setIsOpen(false)
+            queryClient.invalidateQueries('images')
+          } else {
+            setError(data.message)
+          }
+        },
+        onError: async (err, variables, context) => {
+          // if (context?.previousImage) {
+          //   queryClient.setQueryData('images', context.previousImage)
+          // }
+          setError(err)
+          console.log('Error while updating...', err)
+          console.log('data sent is', variables)
+        },
+        onSettled: async () => {
+          queryClient.invalidateQueries('images')
+        },
+      })
+    }
+  }
   const handleClose = () => {
     setIsOpen(false)
   }
 
   //timeout reset setError or setSuccess
-  const timeoutId = setTimeout(() => {
+  setTimeout(() => {
     setSuccess('')
     setError('')
   }, 30000)
@@ -89,8 +152,7 @@ const EditPatientDialog = ({ id, isOpen, setIsOpen }) => {
             <Input
               type={'file'}
               label={'description'}
-              value={testDesc}
-              setValue={setTestDesc}
+              setValue={changeHandler}
             />
           </FormControl>
 
@@ -101,7 +163,7 @@ const EditPatientDialog = ({ id, isOpen, setIsOpen }) => {
               variant='contained'
               type='submit'
             >
-              add
+              {isLoading ? 'adding...' : ' add'}
             </Button>
             <Button
               variant='outlined'
@@ -117,10 +179,10 @@ const EditPatientDialog = ({ id, isOpen, setIsOpen }) => {
     </Dialog>
   )
 }
-EditPatientDialog.propType = {
-  id: PropTypes.string.isRequired,
+AddImageDialog.propType = {
+  test_id: PropTypes.string.isRequired,
   isOpen: PropTypes.bool.isRequired,
   setIsOpen: PropTypes.func.isRequired,
 }
 
-export default EditPatientDialog
+export default AddImageDialog

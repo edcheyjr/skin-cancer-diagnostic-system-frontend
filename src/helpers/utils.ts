@@ -1,3 +1,5 @@
+import { rejects } from 'assert'
+
 // gets storageItem from localStorage if their is any item
 export const getStorageItem = (item: string) => {
   let storageItem
@@ -127,14 +129,16 @@ function formatStringDecimalToPercentage(a: string) {
   return percentage.toFixed(2)
 }
 
-export function convertFileToBase64(filePath: string) {}
-
-const blobToBase64 = (blob: Blob) => {
-  return new Promise((resolve, _) => {
+export function convertFileToBase64(file: File) {
+  return new Promise((resolve, reject) => {
     const reader = new FileReader()
-    reader.readAsDataURL(blob)
-    reader.onloadend = function () {
+    reader.readAsDataURL(file)
+    reader.onload = function () {
       resolve(reader.result)
+    }
+    reader.onerror = (error) => reject(error)
+    reader.onabort = () => {
+      console.log('aborted...')
     }
   })
 }

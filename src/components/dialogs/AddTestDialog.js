@@ -23,7 +23,7 @@ const Transition = React.forwardRef(function Transition(props, ref) {
   return <Slide direction='up' ref={ref} {...props} />
 })
 
-const EditPatientDialog = ({ id, isOpen, setIsOpen }) => {
+const AddTestDialog = ({ id, isOpen, setIsOpen }) => {
   const queryClient = useQueryClient()
 
   // get query data of a specific patient for editing
@@ -41,16 +41,19 @@ const EditPatientDialog = ({ id, isOpen, setIsOpen }) => {
   }
   // mutation
   const { isLoading, mutate, status } = useAuthedMutation(postPatientRecord, {
-    onMutate: async (newPatient) => {
+    onMutate: async (newPatientTestRecord) => {
       // Cancel any outgoing refetches (so they don't overwrite our optimistic update)
       await queryClient.cancelQueries('patientsRecord')
       // Snapshot the previous value
-      const previousPatients = queryClient.getQueryData('patientsRecord')
+      const previousRecords = queryClient.getQueryData('patientsRecord')
       // Optimistically update to the new value
-      queryClient.setQueryData('patientsRecord', (old) => [...old, newPatient])
+      queryClient.setQueryData('patientsRecord', (old) => [
+        ...old,
+        newPatientTestRecord,
+      ])
 
       // Return a context object with the snapshotted value
-      return { previousPatients }
+      return { previousRecords }
     },
   })
   const handleSubmit = (e) => {
@@ -76,7 +79,7 @@ const EditPatientDialog = ({ id, isOpen, setIsOpen }) => {
         }
       },
       onError: async (err, variables, context) => {
-        queryClient.setQueryData('patientsRecord', context.previousPatients)
+        queryClient.setQueryData('patientsRecord', context.previousRecords)
         setError(err)
         console.log('Error while posting...', err)
         console.log('data sent is', variables)
@@ -161,10 +164,10 @@ const EditPatientDialog = ({ id, isOpen, setIsOpen }) => {
     </Dialog>
   )
 }
-EditPatientDialog.propType = {
+AddTestDialog.propType = {
   id: PropTypes.string.isRequired,
   isOpen: PropTypes.bool.isRequired,
   setIsOpen: PropTypes.func.isRequired,
 }
 
-export default EditPatientDialog
+export default AddTestDialog

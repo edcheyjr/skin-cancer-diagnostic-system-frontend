@@ -503,6 +503,7 @@ const PatientRecord = () => {
               data.status === 'success'
             ) {
               setUpdateSuccess(data.message)
+              console.log('updated successfully', data)
               queryClient.invalidateQueries('patientsRecord')
             } else {
               setRecordsErrMessage(data.message)

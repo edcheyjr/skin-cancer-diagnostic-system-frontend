@@ -146,13 +146,13 @@ const TestImageCard = ({
           <div className='flex flex-col gap-2'>
             {formattedScoreArr.map((item, key) => (
               <ClassficationBar key={key}>
-                <ClassficationLabel title={classification} key={key}>
+                <ClassficationLabel title={classification} key={classification}>
                   {item.label}
                 </ClassficationLabel>
 
                 <div className='w-3/4 bg-gray-200 rounded-full h-fit' key={key}>
                   <div
-                    key={key}
+                    key={classification}
                     className={`${
                       item.conf >= 75
                         ? 'bg-[#24f0ce]'
@@ -183,10 +183,10 @@ TestImageCard.propTypes = {
   test_id: PropTypes.string.isRequired,
   image_url: PropTypes.string.isRequired,
   localization: PropTypes.string.isRequired,
-  classfication: PropTypes.string.isRequired,
+  classification: PropTypes.string.isRequired,
   confidence: PropTypes.string.isRequired,
   date_modified: PropTypes.string.isRequired,
-  score: PropTypes.string.isRequired,
+  scores: PropTypes.string.isRequired,
 }
 
 export default TestImageCard

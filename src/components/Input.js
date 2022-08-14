@@ -142,7 +142,7 @@ const InputCard = ({
           // defaultValue={value}
           // placeholder={label}
           className='outline-1 outline-dashed outline-[#f6854e]   file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-semibold file:bg-[#f6854e3f] file:text-[#f6854e] hover:file:bg-[#f6854e4f]'
-          // onChange={({ target }) => setValue(target.value)}
+          onChange={setValue}
           required={isRequired}
         />
       ) : (

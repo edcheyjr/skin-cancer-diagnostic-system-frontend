@@ -296,7 +296,7 @@ const PatientRecord = () => {
   const [docdiagnosis, setDocDiagonsis] = useState('')
   const [docrec, setDocRec] = useState('')
   const [recordsErrMessage, setRecordsErrMessage] = useState('')
-  const [updatesuccess, setUpdateSuccess] = useState('')
+  const [updateSuccess, setUpdateSuccess] = useState('')
 
   // edit checks
   const [isFirstnmEdit, setFirstnameEdit] = useState(false)
@@ -459,6 +459,8 @@ const PatientRecord = () => {
   setTimeout(() => {
     setSuccess('')
     setError('')
+    setRecordsErrMessage('')
+    setUpdateSuccess('')
   }, 30000)
   if (isLoading) {
     return <Loading />
@@ -488,9 +490,9 @@ const PatientRecord = () => {
       const TestUpdate = {
         test_name: patient_test_obj.test_name,
         test_description: patient_test_obj.test_description,
-        test_result: '',
-        doc_diagnosis: '',
-        doc_recommendation: '',
+        test_result: testresult,
+        doc_diagnosis: docdiagnosis,
+        doc_recommendation: docrec,
       }
       mutateRecord.mutate(
         { id: patient_test_obj.test_id, diagnosis: TestUpdate },
@@ -511,7 +513,7 @@ const PatientRecord = () => {
           },
           onError: async (err, variables, context) => {
             queryClient.setQueryData('patientsRecord', context.previousRecord)
-            setError(err)
+            setRecordsErrMessage(err)
             console.log('Error while updating...', err)
             console.log('data sent is', variables)
           },
@@ -804,8 +806,15 @@ const PatientRecord = () => {
             </Articles>
             <Articles>
               <SubTitle>DOCTOR'S RESULTS</SubTitle>
+
               {patient_test_obj ? (
                 <>
+                  {recordsErrMessage && (
+                    <ErrorMessage>{recordsErrMessage}</ErrorMessage>
+                  )}
+                  {updateSuccess && (
+                    <SuccessMessage>{updateSuccess}</SuccessMessage>
+                  )}
                   <ResultContainer>
                     <FormControl className='hover:shadow-md hover:shadow-[#f6854e]/30 py-1 px-2'>
                       <LabelContainer>

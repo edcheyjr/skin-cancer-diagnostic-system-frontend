@@ -1,4 +1,43 @@
-# Getting Started with Create React App
+# SKIN CANCER CLASSFICATION SYSTEM
+
+This the frontend application of the skin cancer classfication service. It used CNN model to makes it classfication.
+Here are the pages.
+
+## login and register
+
+<img src="./readme/auth.png">
+
+## dashboard
+
+<img src="./readme/dashboard.png">
+
+## patient records page
+
+<img src="./readme/patient-records-page.png">
+
+## image details
+
+<img src="./readme/image-details.png">
+
+## add new patient
+
+<img src="./readme/new-patient.png">
+
+## add new test
+
+<img src="./readme/test.png">
+
+## add new image
+
+<img src="./readme/image.png">
+
+## past records
+
+<img src="./readme/past.png">
+
+# RUNING THE APPLICATION ON LOCAL MACHINE
+
+however note that you need also to have the **[backend api](https://github.com/edcheyjr/skin-cancer-diagnostic-system-backend.git)** to run
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 

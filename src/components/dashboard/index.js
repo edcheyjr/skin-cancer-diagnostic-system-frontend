@@ -94,7 +94,7 @@ const Body = ({ searchValue }) => {
     return <span>Error: {error.message}</span>
   }
 
-  if (isSuccess) {
+  if (isSuccess && data) {
     const filteredData = data.filter((patient) =>
       patient.name.toLowerCase().includes(searchValue.toLowerCase())
     )

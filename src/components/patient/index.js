@@ -324,6 +324,7 @@ const PatientRecord = () => {
     {
       onSuccess: (data) => {
         console.log('data', data)
+
         queryClient.setQueryData(['patients', data.public_id], data)
       },
     }
@@ -432,6 +433,14 @@ const PatientRecord = () => {
     },
     onError: (err) => {
       console.log('patient record error', err)
+    },
+    onSettled: (response) => {
+      const data = queryClient
+        .getQueryData('patientRecord')
+        ?.find((record) => record.patient_id === patient_id)
+      if (!data) {
+        queryClient.invalidateQueries('patientsRecord')
+      }
     },
   })
   // let query_data = query.data

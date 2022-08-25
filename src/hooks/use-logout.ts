@@ -1,6 +1,7 @@
 import { useQueryClient } from 'react-query'
 import useAuthMutation from './use-auth-mutation-hook'
 import { getStorageItem } from '../helpers/utils'
+import { removeItemFromStorage } from '../helpers/utils'
 
 const { item } = getStorageItem('user')
 
@@ -27,6 +28,7 @@ export default function useLogout() {
   const currentClient = useQueryClient()
   return useAuthMutation(logoutUser, {
     onSuccess() {
+      removeItemFromStorage('user')
       currentClient.invalidateQueries('user')
     },
   })

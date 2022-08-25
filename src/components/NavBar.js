@@ -100,7 +100,6 @@ const NavBar = () => {
         if (response.status === 'success') {
           console.log('response', response)
           console.log('message', response.message)
-          removeItemFromStorage('user')
         }
       },
       onError: async (error) => {
@@ -108,6 +107,7 @@ const NavBar = () => {
       },
       onSettled: () => {
         console.log('settled')
+        navigate('/auth')
       },
     })
   }

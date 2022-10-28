@@ -10,9 +10,9 @@ const useAuthedQuery = (
   ...options: any
 ) => {
   const query = useQuery(queryName, queryFunction, options)
-  console.log('query', query)
+  // console.log('query', query)
   const error: any = query?.error
-  console.log('error', error)
+  // console.log('error', error)
 
   if (error?.status === 401 || error?.status === 403) {
     // Insert custom access-token refresh logic here. For now, we are

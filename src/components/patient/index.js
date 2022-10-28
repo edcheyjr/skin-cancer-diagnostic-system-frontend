@@ -429,6 +429,7 @@ const PatientRecord = () => {
   // querying patient data
   const query = useAuthedQuery(['patientsRecord'], getAllPatientsRecord, {
     onSuccess: (data) => {
+      console.log('data', data)
       queryClient.setQueryData(['patientsRecord'], data)
     },
     onError: (err) => {
@@ -483,10 +484,13 @@ const PatientRecord = () => {
   }
 
   if (query.isSuccess) {
-    let past_test_records = query.data?.filter(
+    let past_test_records = patient_record?.filter(
       (item) => item.status !== 'active'
     )
+    // console.log('patient_record', patient_record)
+    // console.log('past_test_records', past_test_records)
     let patient_test_obj = query.data?.find((item) => item.status === 'active')
+    // console.log('patient', patient_test_obj)
 
     // cancel update patient record
     const handleCancelResult = () => {
